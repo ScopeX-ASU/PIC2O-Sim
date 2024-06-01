@@ -1,0 +1,84 @@
+criterion:
+  name: nmse
+  aux_output_weight: 0.0
+
+test_criterion:
+  name: nL2norm
+  weighted_frames: 0
+  weight: 1
+
+aux_criterion:
+  curl_loss:
+    weight: 0.0
+  tv_loss:
+    weight: 0.0
+  poynting_loss:
+    weight: 0.0
+  derivative_loss:
+    weight: 0.0
+  std_decay_loss:
+    weight: 0.0
+
+optimizer:
+  name: adam
+  lr: 0.002
+  weight_decay: 0.000
+
+scheduler:
+  name: cosine
+  lr_gamma: 0.99
+  lr_min: 0.00001
+
+run:
+  experiment: "fdtd_cnn_train_PICCO"
+  n_epochs: 100
+  batch_size: 1
+  grad_accum_step: 1
+  gpu_id: 0
+  use_cuda: True
+  deterministic: True
+  random_state: 59
+  log_interval: 100
+  train_noise: 0
+  grad_accum_step: 1
+  fp16: False
+  test_autoregressive: False
+  feature_map_plot: False
+  test_first_last_frames: False
+  multi_train_schedule: [1]
+  wandb:
+    project: fdtd
+    entity: scopex
+    name: cnn
+quantize:
+  weight_bit: 32
+  input_bit: 32
+
+checkpoint:
+  save_best_model_k: 1
+  checkpoint_dir: "fdtd/cnn/train_random"
+  model_comment: ""
+  resume: 0
+  restore_checkpoint: "none"
+  no_linear: 0
+
+model:
+  name: 'MultiStepDynamicCNN'
+  share_encoder: False
+  share_decoder: False
+  share_backbone: False
+  share_history_encoder: False
+  if_pass_history: True
+  if_pass_grad: False
+
+
+debug:
+  verbose: 1
+
+plot:
+  train: True
+  valid: True
+  test: True
+  autoreg: True
+  interval: 1
+  dir_name: train_mmi_3x3_L_PICCO_CNN2d

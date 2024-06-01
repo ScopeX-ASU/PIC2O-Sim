@@ -1,0 +1,249 @@
+dataset:
+  name: fdtd
+  root: ./data
+  num_workers: 4
+  img_height: 256
+  img_width: 256
+  train_valid_split_ratio: [0.7, 0.3]
+  center_crop: None
+  resize_mode: bicubic
+  n_test_samples: None
+  n_valid_samples: None
+  test_ratio: 0.2
+  in_frames: 10
+  out_frames: 160
+  offset_frames: 10
+  num_classes: 10
+  transform: basic
+  shuffle: 1
+  device_list: ['mmi_3x3_L_random']
+  processed_dir: processed
+  wavelength: 1.55
+  augment:
+    mixup_alpha: 1.0
+    cutmix_alpha: 0.0
+    cutmix_minmax: None
+    prob: 0.0
+    switch_prob: 0.0
+    mode: elem
+    correct_lam: True
+    random_vflip_ratio: 0.5
+  test_augment:
+    mixup_alpha: 1.0
+    cutmix_alpha: 0.0
+    cutmix_minmax: None
+    prob: 0.0
+    switch_prob: 0.0
+    mode: elem
+    correct_lam: True
+    random_vflip_ratio: 0
+  batch_strategy: "keep_spatial_res" # either "resize_and_padding_to_square" or "keep_spatial_res" or "keep_spatial_res_pad_to_256"
+  out_channels: 80
+  
+
+criterion:
+  name: nL2norm
+  aux_output_weight: 0.0
+
+test_criterion:
+  name: nL2norm
+
+aux_criterion:
+  curl_loss:
+    weight: 0.0
+  tv_loss:
+    weight: 0.0
+  poynting_loss:
+    weight: 0.0
+  derivative_loss:
+    weight: 0.0
+  std_decay_loss:
+    weight: 0.0
+
+optimizer:
+  name: adam
+  lr: 0.002
+  weight_decay: 0.000
+
+scheduler:
+  name: cosine
+  lr_gamma: 0.99
+  lr_min: 0.00001
+
+run:
+  experiment: "fdtd_cnn_train_random"
+  n_epochs: 100
+  batch_size: 1
+  grad_accum_step: 1
+  gpu_id: 0
+  use_cuda: True
+  deterministic: True
+  random_state: 59
+  log_interval: 50
+  train_noise: 0
+  grad_accum_step: 1
+  fp16: False
+  test_autoregressive: False
+  feature_map_plot: False
+  test_first_last_frames: False
+  test_speed: False
+  test_mode: whole_video
+  wandb:
+    project: fdtd
+    entity: scopex
+    name: cnn
+quantize:
+  weight_bit: 32
+  input_bit: 32
+
+checkpoint:
+  save_best_model_k: 3
+  checkpoint_dir: "fdtd/cnn/train_random"
+  model_comment: ""
+  resume: 0
+  restore_checkpoint: "none"
+  no_linear: 0
+
+model:
+  name: 'FourierCNN'
+  aux_head: False
+  hidden_list: [96, 192, 384, 768, 1536]
+  aux_kernel_size_list: [5, 5, 5, 5]
+  aux_stride: [2, 2, 2, 2]
+  aux_padding: [2, 2, 2, 2]
+
+  field_norm_mode: "max"
+  dropout_rate: 0.2
+  drop_path_rate: 0.0
+  
+  out_channels: 80
+  max_propagating_filter: 0
+  input_cfg:
+    input_mode: "eps_E0_Ji" # or eps_E0_lap_Ji
+    include_src: True
+  history_encoder_cfg:
+    kernel_size_list: [1]
+    kernel_list: [72]
+    stride_list: [1]
+    padding_list: [0]
+    dilation_list: [1]
+    groups_list: [1]
+    residual: [False]
+    norm_list: [False]
+    act_list: [False]
+    se: [False]
+    pac: False
+    conv_cfg:
+      type: Conv2d
+      padding_mode: replicate
+    norm_cfg:
+      type: MyLayerNorm
+      eps: 0.000001
+      data_format: channels_first
+    act_cfg:
+      type: GELU
+    with_cp: False
+    if_pre_dwconv: False
+  guidance_generator_cfg:
+    kernel_size_list: [3, 3, 5, 5]
+    kernel_list: [72, 72, 48, 48]
+    stride_list: [1, 1, 1, 1]
+    padding_list: [1, 1, 2, 2]
+    dilation_list: [1, 1, 1, 1]
+    groups_list: [1, 72, 1, 48]
+    residual: [False, True, False, True]
+    norm_list: [False, True, False, True]
+    act_list: [False, True, False, True]
+    se: [False, False, False, False]
+    pac: False
+    conv_cfg:
+      type: Conv2d
+      padding_mode: replicate
+    norm_cfg:
+      type: MyLayerNorm
+      eps: 0.000001
+      data_format: channels_first
+    act_cfg:
+      type: GELU
+    with_cp: False
+    if_pre_dwconv: False
+  encoder_cfg:
+    kernel_size_list: [1, 3, 1, 3]
+    kernel_list: [72, 72, 96, 96]
+    stride_list: [1, 1, 1, 1]
+    padding_list: [0, 1, 0, 1]
+    dilation_list: [1, 1, 1, 1]
+    groups_list: [1, 72, 1, 96]
+    residual: [False, True, False, True]
+    norm_list: [False, True, False, True]
+    act_list: [False, True, False, True]
+    pac: False
+    conv_cfg:
+      type: Conv2d
+      padding_mode: replicate
+    norm_cfg:
+      type: MyLayerNorm
+      eps: 0.000001
+      data_format: channels_first
+    act_cfg:
+      type: GELU
+    with_cp: False
+    if_pre_dwconv: False
+  backbone_cfg:
+    kernel_size_list: [77]
+    kernel_list: [1]
+    stride_list: [1]
+    padding_list: [38]
+    dilation_list: [1]
+    groups_list: [1]
+    norm_list: [True]
+    act_list: [True]
+    share_weight: False
+    num_shared_layers: 1
+    residual: [True]
+    pac: False
+    conv_cfg:
+      type: Conv2d
+      padding_mode: replicate
+    norm_cfg:
+      type: MyLayerNorm
+      eps: 0.000001
+      data_format: channels_first
+    act_cfg:
+      type: GELU
+    with_cp: True
+    if_pre_dwconv: False
+  decoder_cfg:
+    kernel_size_list: [1, 1]
+    kernel_list: [512, 80]
+    stride_list: [1, 1]
+    padding_list: [0, 0]
+    dilation_list: [1, 1]
+    groups_list: [1, 1]
+    residual: [False, False]
+    norm_list: [True, False]
+    act_list: [True, False]
+    pac: False
+    conv_cfg:
+      type: Conv2d
+      padding_mode: replicate
+    norm_cfg:
+      type: MyLayerNorm
+      eps: 0.000001
+      data_format: channels_first
+    act_cfg:
+      type: GELU
+    with_cp: False
+    if_pre_dwconv: False
+  transform: dft
+
+debug:
+  verbose: 1
+
+plot:
+  train: False
+  valid: False
+  test: False
+  interval: 1
+  dir_name: train_mmi_3x3_L_random_CNN2d
+  root: ./plot
