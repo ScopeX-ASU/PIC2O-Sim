@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-To run the code, please install the open-source FDTD simulator [MEEP](https://github.com/NanoComp/meep)， [pyutils](https://github.com/JeremieMelo/pyutility) and other necessary packages in requirements.txt
+To run the code, please install the open-source FDTD simulator [MEEP](https://github.com/NanoComp/meep), [pyutils](https://github.com/JeremieMelo/pyutility) and other necessary packages in requirements.txt
 
 ## Data Generation
 
