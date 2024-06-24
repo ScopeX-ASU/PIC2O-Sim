@@ -2,6 +2,10 @@
 
 **PIC2O** is a physics-inspired CNN-based neural operator that serves as a surrogate for the FDTD simulation in solving Maxwell's equations.
 
+## Prerequisites
+
+To run the code, please install the open-source FDTD simulator [MEEP](https://github.com/NanoComp/meep) and [pyutils](https://github.com/JeremieMelo/pyutility).
+
 ## Data Generation
 
 To run the code, first, you need to generate data for three different types of photonic devices:
